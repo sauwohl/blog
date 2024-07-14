@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="hm-dianping">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/hm-dianping" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/hm-dianping/src/main/java" />
+      <root url="file://$PROJECT_DIR$/hm-dianping/src/test/java" />
+    </SOURCES>
+  </library>
+</component>

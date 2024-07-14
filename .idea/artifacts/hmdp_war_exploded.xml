@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="hmdp:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/hmdp_war_exploded</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="library" level="project" name="hm-dianping" />
+        </element>
+      </element>
+      <element id="javaee-facet-resources" facet="hmdp/web/Web" />
+    </root>
+  </artifact>
+</component>
