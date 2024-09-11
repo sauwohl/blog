@@ -19,7 +19,7 @@ public class RedisIdWorker {
     private StringRedisTemplate stringRedisTemplate;
 
     public long nextId(String keyPrefix){
-        //实现全局唯一id
+        // 实现全局唯一id
         // 生成时间戳
         LocalDateTime now = LocalDateTime.now();
         long nowsecond = now.toEpochSecond(UTC);

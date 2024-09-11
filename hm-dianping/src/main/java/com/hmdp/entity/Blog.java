@@ -44,6 +44,7 @@ public class Blog implements Serializable {
      * 用户图标
      */
     @TableField(exist = false)
+    // 该注解表示字段不在数据库表中
     private String icon;
     /**
      * 用户姓名

@@ -13,6 +13,11 @@ spring:
     host: 127.0.0.1
     port: 6379
     # password:
+#    cluster:
+#      nodes:
+#        - redis://127.0.0.1:6379
+#        - redis://127.0.0.1:6380
+#        - redis://127.0.0.1:6381
     lettuce:
       pool:
         max-active: 10
