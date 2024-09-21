@@ -19,4 +19,8 @@ import com.hmdp.dto.LoginFormDTO;
 public interface IUserService extends IService<User> {
     Result sendCode(String phone, HttpSession session);
     Result login(LoginFormDTO loginForm, HttpSession session);
+
+    Result sign();
+
+    Result signCount();
 }
