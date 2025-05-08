@@ -1,30 +1,51 @@
 package com.blog.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Result {
-    private Boolean success;
-    private String errorMsg;
+    private Integer code;
+    private String message;
     private Object data;
-    private Long total;
+    private Map<String, Object> extra;
 
-    public static Result ok(){
-        return new Result(true, null, null, null);
+    public Result() {
+        this.extra = new HashMap<>();
     }
-    public static Result ok(Object data){
-        return new Result(true, null, data, null);
+
+    public static Result ok() {
+        Result r = new Result();
+        r.setCode(200);
+        r.setMessage("操作成功");
+        return r;
     }
-    public static Result ok(List<?> data, Long total){
-        return new Result(true, null, data, total);
+
+    public static Result ok(Object data) {
+        Result r = new Result();
+        r.setCode(200);
+        r.setMessage("操作成功");
+        r.setData(data);
+        return r;
     }
-    public static Result fail(String errorMsg){
-        return new Result(false, errorMsg, null, null);
+
+    public static Result fail(String message) {
+        Result r = new Result();
+        r.setCode(500);
+        r.setMessage(message);
+        return r;
+    }
+
+    /**
+     * 添加额外数据
+     *
+     * @param key 数据键
+     * @param value 数据值
+     * @return Result对象本身，支持链式调用
+     */
+    public Result setExtra(String key, Object value) {
+        this.extra.put(key, value);
+        return this;
     }
 }

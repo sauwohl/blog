@@ -5,7 +5,12 @@ import com.blog.entity.User;
 import com.blog.service.UserService;
 import com.blog.dto.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/users")
@@ -53,13 +58,54 @@ public class AdminController {
         return Result.ok(userService.resetPassword(userId));
     }
 
-    @GetMapping("/account/operation")
-    public Result getAccountOperation() {
-        String account = "user123";
-        int operate = 1; // 封禁
+    /**
+     * 账号操作接口
+     * 支持踢出、封禁、解封操作
+     *
+     * @param operVO 操作请求参数
+     * @param authorization 认证token
+     * @return 操作结果，包含重定向信息
+     */
+    @PostMapping("/account/operation")
+    public ResponseEntity<Result> handleAccountOperation(
+            @RequestBody OperVO operVO,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+        
+        OperVO operResult;
+        String redirectUrl = null;
+        
+        switch (operVO.getOperate()) {
+            case "2": // 踢蹬
+                operResult = userService.kickOutUser(operVO.getAccount());
+                redirectUrl = "/user/login";
+                break;
+            case "1": // 封禁
+                operResult = userService.banUser(operVO.getAccount());
+                redirectUrl = "/user/login";
+                break;
+            case "0": // 解封
+                operResult = userService.unbanUser(operVO.getAccount());
+                break;
+            default:
+                return ResponseEntity.badRequest()
+                    .body(Result.fail("无效的操作类型"));
+        }
 
-        OperVO response = new OperVO(account, operate);
-        return Result.ok(response);
+        Result result = Result.ok(operResult);
+        if (redirectUrl != null) {
+            result.setExtra("redirectUrl", redirectUrl);
+        }
+        
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 检查用户是否被封禁
+     */
+    @GetMapping("/{account}/status")
+    public Result checkUserStatus(@PathVariable String account) {
+        boolean isBanned = userService.isUserBanned(account);
+        return Result.ok(isBanned ? "账号已被封禁" : "账号状态正常");
     }
 
 }
