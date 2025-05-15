@@ -32,3 +32,19 @@ mybatis-plus:
 logging:
   level:
     com.hmdp: debug
+
+# 邮件配置
+mail:
+  host: smtp.qq.com  # QQ邮箱的SMTP服务器地址
+  port: 587         # SMTP服务器端口号
+  username: 1594133583@qq.com  # 发件人邮箱
+  password: uxiefpxpykamggbj  # 邮箱授权码（不是邮箱密码）
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+          required: true
+  default-encoding: UTF-8
+  debug: true

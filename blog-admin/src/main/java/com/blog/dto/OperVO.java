@@ -34,8 +34,8 @@ public class OperVO {
 
     public OperVO(String account, AccountOperationType operationType) {
         this.account = account;
-        this.operate = String.valueOf(operationType.getCode());
-        this.message = operationType.getDescription();
+        this.operate = operationType.getCode();
+        this.message = operationType.getMessage();
     }
 
     private String getMessageByOperate(String operate) {

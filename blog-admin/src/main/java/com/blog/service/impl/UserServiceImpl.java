@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.Random;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -33,7 +32,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public QResult listUsersWithPagination(int page, int size) {
         Page<User> pageObj = new Page<>(page, size);
-        IPage<User> resultPage = userMapper.selectUsersPage(pageObj);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.orderByDesc("identity", "status");
+        IPage<User> resultPage = userMapper.selectPage(pageObj, queryWrapper);
         return new QResult(resultPage.getRecords(), resultPage.getTotal());
     }
 
@@ -45,24 +46,40 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public String createUser(User user) {
-        // 检查用户名是否已存在
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", user.getUsername());
-        User existingUser = userMapper.selectOne(queryWrapper);
-        if (existingUser != null) {
-            return "用户名已存在";
-        }
+    public String createUser(CreateUserDTO createUserDTO) {
+        try {
+            // 检查账号是否已存在
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("account", createUserDTO.getAccount());
+            User existingUser = userMapper.selectOne(queryWrapper);
+            if (existingUser != null) {
+                return "账号已存在";
+            }
 
-        // 设置默认值
-        user.setPasswordHash(generateRandomPassword(10));
-        user.setStatus("active");
-        user.setIdentity("0"); // 默认为普通用户
-        user.setCreatedAt(new Date());
-        user.setUpdatedAt(new Date());
-        
-        userMapper.insert(user);
-        return "新增成功";
+            // 生成随机密码
+            String password = generateRandomPassword(10);
+            
+            // 创建新用户对象并设置默认值
+            User user = new User();
+            user.setAccount(createUserDTO.getAccount());
+            user.setUsername(createUserDTO.getAccount());  // 默认用账号作为用户名
+            user.setPassword(password);
+            user.setPhone(createUserDTO.getEmail());      // 存储邮箱地址
+            user.setImage("");  // 默认头像
+            user.setIdentity(User.NORMAL_USER);          // 默认为普通用户
+            user.setStatus(User.STATUS_OFFLINE);         // 默认为离线状态
+            user.setCreateTime(new Date());
+            
+            // 保存用户
+            userMapper.insert(user);
+            
+            // 发送账号信息邮件
+            emailService.sendAccountInfo(createUserDTO.getEmail(), createUserDTO.getAccount(), password);
+            
+            return "用户创建成功，账号信息已发送至邮箱";
+        } catch (Exception e) {
+            throw new RuntimeException("创建用户失败：" + e.getMessage());
+        }
     }
 
     /**
@@ -94,12 +111,9 @@ public class UserServiceImpl implements UserService {
 
         // 生成随机密码
         String newPassword = generateRandomPassword(10);
-
-        // TODO:加密新密码
-        //String encryptedPassword = passwordEncoder.encode(newPassword);
-
-        // 更新数据库中的密码
-        user.setPasswordHash(newPassword);
+        
+        // TODO: 对密码进行加密
+        user.setPassword(newPassword);
         userMapper.updateById(user);
 
         return newPassword;
@@ -107,7 +121,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 踢出用户
-     * 更新用户最后登出时间，并通知认证模块清除用户token
+     * 将用户状态改为离线
      *
      * @param account 用户账号
      * @return 操作结果
@@ -116,15 +130,12 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public OperVO kickOutUser(String account) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", account);
+        queryWrapper.eq("account", account);
         User user = userMapper.selectOne(queryWrapper);
         
         if (user != null) {
-            // 更新最后登出时间
-            user.setLastLogoutTime(new Date());
+            user.setStatus(User.STATUS_OFFLINE);
             userMapper.updateById(user);
-            
-            // TODO: 通知认证模块清除用户token
         }
         
         return new OperVO(account, AccountOperationType.KICK_OUT);
@@ -132,7 +143,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 封禁用户账号
-     * 将用户状态改为banned，更新登出时间，并通知认证模块清除用户token
+     * 将用户状态改为禁封
      *
      * @param account 用户账号
      * @return 操作结果
@@ -141,16 +152,12 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public OperVO banUser(String account) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", account);
+        queryWrapper.eq("account", account);
         User user = userMapper.selectOne(queryWrapper);
         
         if (user != null) {
-            user.setStatus("banned");
-            user.setLastLogoutTime(new Date());
+            user.setStatus(User.STATUS_BANNED);
             userMapper.updateById(user);
-            
-            // TODO: 通知认证模块清除用户token
-            // authService.invalidateUserToken(account);
         }
         
         return new OperVO(account, AccountOperationType.BAN);
@@ -158,7 +165,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 解封用户账号
-     * 将用户状态改为active
+     * 将用户状态改为离线
      *
      * @param account 用户账号
      * @return 操作结果
@@ -167,11 +174,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public OperVO unbanUser(String account) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", account);
+        queryWrapper.eq("account", account);
         User user = userMapper.selectOne(queryWrapper);
         
         if (user != null) {
-            user.setStatus("active");
+            user.setStatus(User.STATUS_OFFLINE);
             userMapper.updateById(user);
         }
         
@@ -187,10 +194,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isUserBanned(String account) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", account);
+        queryWrapper.eq("account", account);
         User user = userMapper.selectOne(queryWrapper);
         
-        return user != null && "banned".equals(user.getStatus());
+        return user != null && user.getStatus() == User.STATUS_BANNED;
     }
 
     /**
@@ -203,7 +210,7 @@ public class UserServiceImpl implements UserService {
     private String generateRandomPassword(int length) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder sb = new StringBuilder();
-        Random random = new Random();
+        java.util.Random random = new java.util.Random();
         for (int i = 0; i < length; i++) {
             sb.append(chars.charAt(random.nextInt(chars.length())));
         }

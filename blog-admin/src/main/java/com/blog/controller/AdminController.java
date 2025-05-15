@@ -3,7 +3,9 @@ package com.blog.controller;
 import com.blog.dto.OperVO;
 import com.blog.entity.User;
 import com.blog.service.UserService;
+import com.blog.service.EmailService;
 import com.blog.dto.Result;
+import com.blog.dto.CreateUserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,9 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private EmailService emailService;
 
     /**
      * 分页查询所有允许登录的账号列表，按登录状态排序
@@ -34,9 +39,8 @@ public class AdminController {
      * 新增账号
      */
     @PostMapping
-    public Result createUser(@RequestBody User user2) {
-
-        return Result.ok(userService.createUser(user2));
+    public Result createUser(@RequestBody CreateUserDTO createUserDTO) {
+        return Result.ok(userService.createUser(createUserDTO));
     }
 
     /**
