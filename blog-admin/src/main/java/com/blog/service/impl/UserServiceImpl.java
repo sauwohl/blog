@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 设置默认值
-        user.setPasswordHash(generateRandomPassword(10));
+        user.setPassword(generateRandomPassword(10));
         user.setStatus("active");
         user.setIdentity("0"); // 默认为普通用户
         user.setCreatedAt(new Date());
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
         //String encryptedPassword = passwordEncoder.encode(newPassword);
 
         // 更新数据库中的密码
-        user.setPasswordHash(newPassword);
+        user.setPassword(newPassword);
         userMapper.updateById(user);
 
         return newPassword;
@@ -150,7 +150,7 @@ public class UserServiceImpl implements UserService {
             userMapper.updateById(user);
             
             // TODO: 通知认证模块清除用户token
-            // authService.invalidateUserToken(account);
+
         }
         
         return new OperVO(account, AccountOperationType.BAN);
