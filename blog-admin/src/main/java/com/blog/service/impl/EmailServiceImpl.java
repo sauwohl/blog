@@ -25,7 +25,7 @@ public class EmailServiceImpl implements EmailService {
         // 创建一次性链接，30分钟有效
         String content = String.format("账号：%s\n密码：%s", account, password);
         String token = oneTimeLinkService.createLink(content, 30);
-        String link = "http://localhost:8080/link/" + token;
+        String link = "http://localhost:8081/link/" + token;
         
         // 发送邮件
         SimpleMailMessage message = new SimpleMailMessage();

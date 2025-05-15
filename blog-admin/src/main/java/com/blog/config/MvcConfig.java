@@ -21,12 +21,10 @@ public class MvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/user/code",
                         "/user/login",
-                        "/blog/hot",
-                        "/shop/**",
-                        "/shop-type/**",
+                        "/blog",
                         "/upload/**",
-                        "/voucher/**",
-                        "/admin/**"
+                        "/admin/**",
+                        "/link/**"
                 ).order(1); // 排除不需要拦截的路径
 
         // 拦截所有请求，拦截器执行顺序按默认添加顺序执行，也可以用order调整

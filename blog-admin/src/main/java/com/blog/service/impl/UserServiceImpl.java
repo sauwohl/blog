@@ -62,6 +62,7 @@ public class UserServiceImpl implements UserService {
             }
 
             // 生成随机密码
+            // TODO 加密存数据库
             String password = generateRandomPassword(10);
             
             // 创建新用户对象并设置默认值
