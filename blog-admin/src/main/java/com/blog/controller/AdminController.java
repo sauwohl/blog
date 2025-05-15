@@ -3,12 +3,16 @@ package com.blog.controller;
 import com.blog.dto.OperVO;
 import com.blog.entity.User;
 import com.blog.service.UserService;
+import com.blog.service.EmailService;
 import com.blog.dto.Result;
+import com.blog.dto.CreateUserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/users")
@@ -16,6 +20,9 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private EmailService emailService;
 
     /**
      * 分页查询所有允许登录的账号列表，按登录状态排序
@@ -32,9 +39,8 @@ public class AdminController {
      * 新增账号
      */
     @PostMapping
-    public Result createUser(@RequestBody User user) {
-
-        return Result.ok(userService.createUser(user));
+    public Result createUser(@RequestBody CreateUserDTO createUserDTO) {
+        return Result.ok(userService.createUser(createUserDTO));
     }
 
     /**
@@ -61,12 +67,13 @@ public class AdminController {
      * 支持踢出、封禁、解封操作
      *
      * @param operVO 操作请求参数
-     *
+     * @param authorization 认证token
      * @return 操作结果，包含重定向信息
      */
-    @PostMapping("/operation")
+    @PostMapping("/account/operation")
     public ResponseEntity<Result> handleAccountOperation(
-            @RequestBody OperVO operVO) {
+            @RequestBody OperVO operVO,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
         
         OperVO operResult;
         String redirectUrl = null;

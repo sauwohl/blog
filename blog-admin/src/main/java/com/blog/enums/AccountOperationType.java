@@ -1,29 +1,24 @@
 package com.blog.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum AccountOperationType {
-    KICK_OUT(2, "踢蹬"),
-    BAN(1, "封禁"),
-    UNBAN(0, "解封");
+    UNBAN("0", "解封"),
+    BAN("1", "封禁"),
+    KICK_OUT("2", "踢蹬");
 
-    private final int code;
-    private final String description;
+    private final String code;
+    private final String message;
 
-    AccountOperationType(int code, String description) {
+    AccountOperationType(String code, String message) {
         this.code = code;
-        this.description = description;
+        this.message = message;
     }
 
-    public int getCode() {
-        return code;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public static AccountOperationType getByCode(int code) {
+    public static AccountOperationType getByCode(String code) {
         for (AccountOperationType type : values()) {
-            if (type.getCode() == code) {
+            if (type.getCode().equals(code)) {
                 return type;
             }
         }

@@ -1,8 +1,10 @@
 package com.blog.service;
 
+import com.blog.dto.CreateUserDTO;
 import com.blog.dto.QResult;
 import com.blog.entity.User;
 import com.blog.dto.OperVO;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,7 +18,8 @@ public interface UserService {
     /**
      * 创建新用户
      */
-    String createUser(User user);
+    @Transactional
+    String createUser(CreateUserDTO createUserDTO);
 
     User getUserById(Long id);
 
