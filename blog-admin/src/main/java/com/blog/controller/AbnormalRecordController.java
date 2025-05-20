@@ -8,6 +8,8 @@ import com.blog.service.AbnormalRecordService;
 import com.blog.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/admin/abnormal-records")
@@ -23,12 +25,14 @@ public class AbnormalRecordController {
      * 分页查询异常记录
      */
     @GetMapping
-    public Result<PageResult<AbnormalRecordDTO>> listAbnormalRecords(
+    public Result listAbnormalRecords(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int perPage,
             @RequestParam(required = false) Integer category,
-            @RequestParam(required = false) Integer status) {
-        return Result.ok(abnormalRecordService.listAbnormalRecords(page, perPage, category, status));
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime beginDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endDate) {
+        return Result.ok(abnormalRecordService.listAbnormalRecords(page, perPage, category, status, beginDate, endDate));
     }
 
     /**

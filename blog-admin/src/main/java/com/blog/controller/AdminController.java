@@ -4,6 +4,7 @@ import com.blog.dto.OperVO;
 import com.blog.entity.User;
 import com.blog.service.UserService;
 import com.blog.service.EmailService;
+import com.blog.service.AbnormalRecordService;
 import com.blog.dto.Result;
 import com.blog.dto.CreateUserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,20 @@ public class AdminController {
     
     @Autowired
     private EmailService emailService;
+    
+    @Autowired
+    private AbnormalRecordService abnormalRecordService;
+
+    /**
+     * 查询可疑内容
+     * 展示被标记为可疑活动的文章内容
+     */
+    @GetMapping("/suspicious-contents")
+    public Result listSuspiciousContents(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return Result.ok(abnormalRecordService.listSuspiciousContents(page, size));
+    }
 
     /**
      * 分页查询所有允许登录的账号列表，按登录状态排序

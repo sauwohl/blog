@@ -4,18 +4,25 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.blog.dto.AbnormalRecordDTO;
 import com.blog.dto.PageResult;
+import com.blog.dto.SuspiciousContentDTO;
 import com.blog.entity.AccountAbnormalRecord;
 import com.blog.entity.User;
+import com.blog.entity.Article;
 import com.blog.mapper.AccountAbnormalRecordMapper;
 import com.blog.mapper.UserMapper;
+import com.blog.mapper.ArticleMapper;
 import com.blog.service.AbnormalRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 
+@Slf4j
 @Service
 public class AbnormalRecordServiceImpl implements AbnormalRecordService {
 
@@ -24,6 +31,9 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
     
     @Autowired
     private UserMapper userMapper;
+    
+    @Autowired
+    private ArticleMapper articleMapper;
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -40,14 +50,17 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         
         // 添加时间范围条件
         if (beginDate != null) {
-            queryWrapper.ge("create_time", beginDate);
+            log.info("添加开始时间条件: {}", beginDate.format(DATE_FORMATTER));
+            queryWrapper.apply("create_time >= {0}", beginDate);
         }
         if (endDate != null) {
-            queryWrapper.le("create_time", endDate);
+            log.info("添加结束时间条件: {}", endDate.format(DATE_FORMATTER));
+            queryWrapper.apply("create_time <= {0}", endDate);
         }
         
         // 添加异常类型条件
         if (category != null) {
+            log.info("添加异常类型条件: {}", category);
             if (category == 0) {
                 queryWrapper.eq("abnormal_type", "IP_ABNORMAL");
             } else if (category == 1) {
@@ -59,17 +72,24 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         
         // 添加处理状态条件
         if (status != null) {
+            log.info("添加处理状态条件: {}", status);
             queryWrapper.eq("is_resolved", status == 1);
         }
         
         // 按创建时间倒序排序
         queryWrapper.orderByDesc("create_time");
+        
+        // 打印最终的SQL语句
+        log.info("执行查询的SQL条件: {}", queryWrapper.getSqlSegment());
 
         // 执行分页查询
         Page<AccountAbnormalRecord> pageResult = abnormalRecordMapper.selectPage(
             new Page<>(page, perPage),
             queryWrapper
         );
+        
+        // 打印查询结果数量
+        log.info("查询结果总数: {}", pageResult.getTotal());
 
         // 转换为DTO
         List<AbnormalRecordDTO> records = pageResult.getRecords().stream()
@@ -91,9 +111,52 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         AccountAbnormalRecord record = abnormalRecordMapper.selectById(id);
         if (record != null && !record.getIsResolved()) {
             record.setIsResolved(true);
-            record.setUpdateTime(LocalDateTime.now());
             abnormalRecordMapper.updateById(record);
         }
+    }
+
+    @Override
+    public PageResult<SuspiciousContentDTO> listSuspiciousContents(int page, int size) {
+        // 1. 先查询标记为可疑活动的异常记录
+        QueryWrapper<AccountAbnormalRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("abnormal_type", "SUSPICIOUS_ACTIVITY")
+                   .orderByDesc("create_time");
+        
+        Page<AccountAbnormalRecord> pageResult = abnormalRecordMapper.selectPage(
+            new Page<>(page, size),
+            queryWrapper
+        );
+        
+        // 2. 获取相关的文章内容
+        List<SuspiciousContentDTO> records = pageResult.getRecords().stream()
+            .map(record -> {
+                SuspiciousContentDTO dto = new SuspiciousContentDTO();
+                dto.setAccount(record.getAccount());
+                dto.setPublishTime(record.getCreateTime().format(DATE_FORMATTER));
+                
+                try {
+                    // 从abnormal_detail中解析文章ID
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode detailNode = mapper.readTree(record.getAbnormalDetail());
+                    Long articleId = detailNode.get("articleId").asLong();
+                    
+                    // 查询文章信息
+                    Article article = articleMapper.selectById(articleId);
+                    if (article != null) {
+                        dto.setContent(article.getContent());
+                    } else {
+                        dto.setContent("文章已删除");
+                    }
+                } catch (Exception e) {
+                    log.error("解析内容详情失败", e);
+                    dto.setContent("内容解析失败");
+                }
+                
+                return dto;
+            })
+            .collect(Collectors.toList());
+        
+        return PageResult.of(records, pageResult.getTotal(), page, size);
     }
 
     private AbnormalRecordDTO convertToDTO(AccountAbnormalRecord record) {

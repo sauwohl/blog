@@ -11,11 +11,13 @@ import com.blog.enums.AccountOperationType;
 import com.blog.mapper.UserMapper;
 import com.blog.service.EmailService;
 import com.blog.service.UserService;
+import com.blog.utils.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.security.SecureRandom;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -24,6 +26,8 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * 分页查询用户列表
@@ -62,14 +66,15 @@ public class UserServiceImpl implements UserService {
             }
 
             // 生成随机密码
-            // TODO 加密存数据库
             String password = generateRandomPassword(10);
+            // 加密密码
+            String encodedPassword = passwordEncoder.encode(password);
             
             // 创建新用户对象并设置默认值
             User user = new User();
             user.setAccount(createUserDTO.getAccount());
             user.setUsername(createUserDTO.getAccount());  // 默认用账号作为用户名
-            user.setPassword(password);
+            user.setPassword(encodedPassword);  // 存储加密后的密码
             user.setPhone("");
             user.setImage("");  // 默认头像
             user.setIdentity(User.NORMAL_USER);          // 默认为普通用户
@@ -118,11 +123,12 @@ public class UserServiceImpl implements UserService {
         // 生成随机密码
         String newPassword = generateRandomPassword(10);
         
-        // TODO: 对密码进行加密
-        user.setPassword(newPassword);
+        // 对密码进行加密
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
         userMapper.updateById(user);
 
-        return newPassword;
+        return newPassword;  // 返回明文密码给管理员
     }
 
     /**
@@ -214,12 +220,30 @@ public class UserServiceImpl implements UserService {
      * @return 随机生成的密码
      */
     private String generateRandomPassword(int length) {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        StringBuilder sb = new StringBuilder();
-        java.util.Random random = new java.util.Random();
-        for (int i = 0; i < length; i++) {
-            sb.append(chars.charAt(random.nextInt(chars.length())));
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+        StringBuilder password = new StringBuilder();
+        SecureRandom random = new SecureRandom();
+        
+        // 确保密码包含至少一个数字、一个小写字母、一个大写字母和一个特殊字符
+        password.append(chars.charAt(random.nextInt(10))); // 数字
+        password.append(chars.charAt(10 + random.nextInt(26))); // 大写字母
+        password.append(chars.charAt(36 + random.nextInt(26))); // 小写字母
+        password.append(chars.charAt(62 + random.nextInt(10))); // 特殊字符
+        
+        // 填充剩余长度
+        for (int i = 4; i < length; i++) {
+            password.append(chars.charAt(random.nextInt(chars.length())));
         }
-        return sb.toString();
+        
+        // 打乱密码字符顺序
+        char[] passwordArray = password.toString().toCharArray();
+        for (int i = passwordArray.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            char temp = passwordArray[i];
+            passwordArray[i] = passwordArray[j];
+            passwordArray[j] = temp;
+        }
+        
+        return new String(passwordArray);
     }
 }

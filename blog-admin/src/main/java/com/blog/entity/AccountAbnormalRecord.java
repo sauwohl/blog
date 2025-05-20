@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("account_abnormal_records")
+@TableName("account_abnormal_record")
 public class AccountAbnormalRecord {
     
     @TableId(type = IdType.AUTO)
@@ -21,13 +21,7 @@ public class AccountAbnormalRecord {
     
     private String abnormalDetail;  // 异常详细信息
     
-    private String ipAddress;  // 发生异常时的IP地址
-    
-    private String location;   // IP地理位置
-    
     private Boolean isResolved;  // 是否已解决
     
     private LocalDateTime createTime;
-    
-    private LocalDateTime updateTime;
 } 

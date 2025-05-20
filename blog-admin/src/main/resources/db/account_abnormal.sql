@@ -11,7 +11,6 @@ CREATE TABLE `account_abnormal_records` (
   `operator_id` varchar(50) DEFAULT NULL COMMENT '处理人ID',
   `risk_level` tinyint DEFAULT '1' COMMENT '风险等级：1-低，2-中，3-高',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   KEY `idx_user_id` (`user_id`),
   KEY `idx_abnormal_type` (`abnormal_type`),
