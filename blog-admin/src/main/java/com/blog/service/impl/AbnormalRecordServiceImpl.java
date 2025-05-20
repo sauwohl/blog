@@ -186,11 +186,11 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
             description = "未知异常";
         }
         
-        if (record.getIpAddress() != null) {
-            description += String.format("（IP: %s, 位置: %s）", 
-                record.getIpAddress(), 
-                record.getLocation());
-        }
+//        if (record.getIpAddress() != null) {
+//            description += String.format("（IP: %s, 位置: %s）",
+//                record.getIpAddress(),
+//                record.getLocation());
+//        }
         dto.setDescription(description);
         
         // 设置时间
