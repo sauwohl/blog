@@ -15,9 +15,10 @@ public interface UserService {
      * 分页查询用户列表
      * @param page 当前页码
      * @param size 每页大小
+     * @param account 账号（可选，用于模糊搜索）
      * @return 分页查询结果
      */
-    Map<String, Object> listUsersWithPagination(int page, int size);
+    Map<String, Object> listUsersWithPagination(int page, int size, String account);
 
     /**
      * 创建新用户

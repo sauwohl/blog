@@ -39,13 +39,22 @@ public class UserServiceImpl implements UserService {
      *
      * @param page 当前页码
      * @param size 每页大小
+     * @param account 账号模糊搜索条件
      * @return 分页查询结果
      */
     @Override
-    public Map<String, Object> listUsersWithPagination(int page, int size) {
+    public Map<String, Object> listUsersWithPagination(int page, int size, String account) {
         Page<User> pageObj = new Page<>(page, size);
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        
+        // 如果提供了account参数，添加模糊搜索条件
+        if (account != null && !account.trim().isEmpty()) {
+            queryWrapper.like("account", account.trim());
+        }
+        
+        // 按状态降序排序
         queryWrapper.orderByDesc("status");
+        
         IPage<User> resultPage = userMapper.selectPage(pageObj, queryWrapper);
         
         List<Map<String, Object>> results = resultPage.getRecords().stream()

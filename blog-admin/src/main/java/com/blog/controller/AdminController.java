@@ -41,11 +41,14 @@ public class AdminController {
 
     /**
      * 分页查询所有允许登录的账号列表，按登录状态排序
+     * 支持按账号模糊搜索
      */
     @GetMapping
-    public Result listUsers(@RequestParam(defaultValue = "1") int page,
-                          @RequestParam(defaultValue = "10") int size) {
-        Map<String, Object> data = userService.listUsersWithPagination(page, size);
+    public Result listUsers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String account) {
+        Map<String, Object> data = userService.listUsersWithPagination(page, size, account);
         return Result.ok()
                 .setMessage("获取用户列表成功")
                 .setData(data);
@@ -74,7 +77,7 @@ public class AdminController {
     /**
      * 根据账号查询用户
      */
-    @GetMapping("/account/{account}")
+    @GetMapping("/{account}")
     public Result getUserByAccount(@PathVariable String account) {
         User user = userService.getUserByAccount(account);
         if (user == null) {
