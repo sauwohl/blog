@@ -18,14 +18,12 @@ public class Result {
     public static Result ok() {
         Result r = new Result();
         r.setCode(200);
-        r.setMessage("操作成功");
         return r;
     }
 
     public static Result ok(Object data) {
         Result r = new Result();
         r.setCode(200);
-        r.setMessage("操作成功");
         r.setData(data);
         return r;
     }
@@ -46,6 +44,16 @@ public class Result {
      */
     public Result setExtra(String key, Object value) {
         this.extra.put(key, value);
+        return this;
+    }
+
+    public Result setMessage(String message) {
+        this.message = message;
+        return this;
+    }
+
+    public Result setData(Object data) {
+        this.data = data;
         return this;
     }
 }

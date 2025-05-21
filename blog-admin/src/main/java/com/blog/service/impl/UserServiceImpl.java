@@ -18,6 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.security.SecureRandom;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -38,12 +42,32 @@ public class UserServiceImpl implements UserService {
      * @return 分页查询结果
      */
     @Override
-    public QResult listUsersWithPagination(int page, int size) {
+    public Map<String, Object> listUsersWithPagination(int page, int size) {
         Page<User> pageObj = new Page<>(page, size);
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("role", "status");
+        queryWrapper.orderByDesc("status");
         IPage<User> resultPage = userMapper.selectPage(pageObj, queryWrapper);
-        return new QResult(resultPage.getRecords(), resultPage.getTotal(),page, size);
+        
+        List<Map<String, Object>> results = resultPage.getRecords().stream()
+            .map(user -> {
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("userId", user.getId());
+                userMap.put("account", user.getAccount());
+                userMap.put("username", user.getUsername());
+                userMap.put("status", user.getStatus());
+                userMap.put("password", user.getPassword());
+                userMap.put("phone", user.getPhone());
+                return userMap;
+            })
+            .collect(Collectors.toList());
+            
+        Map<String, Object> data = new HashMap<>();
+        data.put("results", results);
+        data.put("total", resultPage.getTotal());
+        data.put("page", page);
+        data.put("per_page", size);
+        
+        return data;
     }
 
     /**

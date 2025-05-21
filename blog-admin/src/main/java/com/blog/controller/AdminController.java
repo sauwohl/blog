@@ -42,13 +42,14 @@ public class AdminController {
     /**
      * 分页查询所有允许登录的账号列表，按登录状态排序
      */
-
     @GetMapping
     public Result listUsers(@RequestParam(defaultValue = "1") int page,
-                            @RequestParam(defaultValue = "10") int size) {
-        return Result.ok(userService.listUsersWithPagination(page, size));
+                          @RequestParam(defaultValue = "10") int size) {
+        Map<String, Object> data = userService.listUsersWithPagination(page, size);
+        return Result.ok()
+                .setMessage("获取用户列表成功")
+                .setData(data);
     }
-
 
     /**
      * 新增账号

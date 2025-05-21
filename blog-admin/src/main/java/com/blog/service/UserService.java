@@ -7,13 +7,17 @@ import com.blog.dto.OperVO;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
 
     /**
-     * 查询所有用户
+     * 分页查询用户列表
+     * @param page 当前页码
+     * @param size 每页大小
+     * @return 分页查询结果
      */
-    QResult listUsersWithPagination(int page, int size);
+    Map<String, Object> listUsersWithPagination(int page, int size);
 
     /**
      * 创建新用户
