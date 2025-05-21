@@ -131,6 +131,19 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 根据账号查询用户
+     *
+     * @param account 用户账号
+     * @return 用户信息，如果用户不存在则返回null
+     */
+    @Override
+    public User getUserByAccount(String account) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("account", account);
+        return userMapper.selectOne(queryWrapper);
+    }
+
+    /**
      * 重置用户密码
      *
      * @param userId 用户ID

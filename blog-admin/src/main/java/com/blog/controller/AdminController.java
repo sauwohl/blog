@@ -70,6 +70,19 @@ public class AdminController {
         }
         return Result.ok(user);
     }
+
+    /**
+     * 根据账号查询用户
+     */
+    @GetMapping("/account/{account}")
+    public Result getUserByAccount(@PathVariable String account) {
+        User user = userService.getUserByAccount(account);
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
+        return Result.ok(user);
+    }
+
     /**
      * 重置密码
      */

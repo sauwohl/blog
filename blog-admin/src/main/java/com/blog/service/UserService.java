@@ -27,6 +27,13 @@ public interface UserService {
 
     User getUserById(Long id);
 
+    /**
+     * 根据账号查询用户
+     * @param account 用户账号
+     * @return 用户信息
+     */
+    User getUserByAccount(String account);
+
     String resetPassword(Long id);
 
     // 账号操作相关方法
