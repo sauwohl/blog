@@ -12,7 +12,7 @@ import java.util.Date;
 @Data
 @Getter
 @Setter
-@TableName("user")
+@TableName("users")
 public class User {
     
     @TableId(type = IdType.AUTO)
@@ -24,17 +24,19 @@ public class User {
     
     private String password;
     
-    private String image;
+    private String avatar;
     
     private String phone;
     
-    private Integer identity;
+    private Integer role;
     
     private Integer status;
     
-    private Date createTime;
+    private Date created_at;
+
+    private Date updated_at;
     
-    private String info;
+    private String bio;
     
     // 用户身份常量
     public static final int NORMAL_USER = 0;
@@ -47,7 +49,7 @@ public class User {
     
     // 判断是否是管理员
     public boolean isAdmin() {
-        return ADMIN_USER == this.identity;
+        return ADMIN_USER == this.role;
     }
     
     // 判断是否被封禁
