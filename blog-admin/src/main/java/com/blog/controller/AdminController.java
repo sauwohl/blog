@@ -47,7 +47,7 @@ public class AdminController {
      * 分页查询所有允许登录的账号列表，按登录状态排序
      * 支持按账号模糊搜索
      */
-    @GetMapping("/list")
+    @GetMapping
     public Result listUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -112,13 +112,11 @@ public class AdminController {
      * 支持踢出、封禁、解封操作
      *
      * @param operVO 操作请求参数
-     * @param authorization 认证token
      * @return 操作结果，包含重定向信息
      */
     @PostMapping("/account/operation")
     public ResponseEntity<Result> handleAccountOperation(
-            @RequestBody OperVO operVO,
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+            @RequestBody OperVO operVO) {
         
         OperVO operResult;
         String redirectUrl = null;

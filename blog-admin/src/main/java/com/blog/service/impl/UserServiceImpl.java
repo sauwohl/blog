@@ -108,7 +108,7 @@ public class UserServiceImpl implements UserService {
             user.setAccount(createUserDTO.getAccount());
             user.setUsername(createUserDTO.getAccount());  // 默认用账号作为用户名
             user.setPassword(encryptedPassword);
-            user.setPhone("");
+            user.setPhone(null);
             user.setAvatar("");  // 默认头像
             user.setRole(User.NORMAL_USER);          // 默认为普通用户
             user.setStatus(User.STATUS_OFFLINE);         // 默认为离线状态
