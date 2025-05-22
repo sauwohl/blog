@@ -22,9 +22,14 @@ public interface UserService {
 
     /**
      * 创建新用户
+     *
+     * @param createUserDTO 创建用户的请求参数
+     * @return 包含创建结果的Map，包括：
+     *         success: 是否成功
+     *         message: 提示信息
+     *         password: 加密后的密码（仅在成功时返回）
      */
-    @Transactional
-    String createUser(CreateUserDTO createUserDTO);
+    Map<String, Object> createUser(CreateUserDTO createUserDTO);
 
     User getUserById(Long id);
 

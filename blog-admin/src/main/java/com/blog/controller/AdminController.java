@@ -65,10 +65,13 @@ public class AdminController {
      */
     @PostMapping
     public Result createUser(@RequestBody CreateUserDTO createUserDTO) {
-        String encryptedPassword = userService.createUser(createUserDTO);
+        Map<String, Object> response = userService.createUser(createUserDTO);
+        if (!(boolean) response.get("success")) {
+            return Result.fail((String) response.get("message"));
+        }
         return Result.ok()
-                .setMessage("用户创建成功，账号信息已发送至邮箱")
-                .setData(encryptedPassword);
+                .setMessage((String) response.get("message"))
+                .setData(response.get("password"));
     }
 
     /**

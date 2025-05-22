@@ -88,14 +88,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public String createUser(CreateUserDTO createUserDTO) {
+    public Map<String, Object> createUser(CreateUserDTO createUserDTO) {
+        Map<String, Object> result = new HashMap<>();
         try {
             // 检查账号是否已存在
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("account", createUserDTO.getAccount());
             User existingUser = userMapper.selectOne(queryWrapper);
             if (existingUser != null) {
-                return "账号已存在";
+                result.put("success", false);
+                result.put("message", "账号已存在");
+                return result;
             }
 
             // 生成随机密码
@@ -121,10 +124,15 @@ public class UserServiceImpl implements UserService {
             // 发送账号信息邮件（发送明文密码）
             emailService.sendAccountInfo(createUserDTO.getEmail(), createUserDTO.getAccount(), randomPassword);
             
-            // 返回AES加密后的密码
-            return encryptedPassword;
+            // 返回成功信息和加密后的密码
+            result.put("success", true);
+            result.put("message", "用户创建成功，账号信息已发送至邮箱");
+            result.put("password", encryptedPassword);
+            return result;
         } catch (Exception e) {
-            throw new RuntimeException("创建用户失败：" + e.getMessage());
+            result.put("success", false);
+            result.put("message", "创建用户失败：" + e.getMessage());
+            return result;
         }
     }
 
