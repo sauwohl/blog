@@ -60,19 +60,15 @@ public class AdminController {
 
     /**
      * 新增账号
-     * 前端需要用AES加密密码，密文通过encryptedPassword字段传递
+     * 系统会生成随机密码，通过邮件发送明文密码给用户
+     * 返回AES加密后的密码给前端
      */
     @PostMapping
     public Result createUser(@RequestBody CreateUserDTO createUserDTO) {
-        try {
-            // 解密密码
-            String decryptedPassword = aesUtil.decrypt(createUserDTO.getEncryptedPassword());
-            createUserDTO.setDecryptedPassword(decryptedPassword);
-            
-            return Result.ok(userService.createUser(createUserDTO));
-        } catch (Exception e) {
-            return Result.fail("密码解密失败：" + e.getMessage());
-        }
+        String encryptedPassword = userService.createUser(createUserDTO);
+        return Result.ok()
+                .setMessage("用户创建成功，账号信息已发送至邮箱")
+                .setData(encryptedPassword);
     }
 
     /**
@@ -101,10 +97,14 @@ public class AdminController {
 
     /**
      * 重置密码
+     * 返回AES加密后的新密码
      */
     @PostMapping("/{id}/reset-password")
     public Result resetPassword(@PathVariable("id") Long userId) {
-        return Result.ok(userService.resetPassword(userId));
+        String encryptedPassword = userService.resetPassword(userId);
+        return Result.ok()
+                .setMessage("密码重置成功")
+                .setData(encryptedPassword);
     }
 
     /**

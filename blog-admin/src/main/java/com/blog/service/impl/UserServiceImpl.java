@@ -11,7 +11,7 @@ import com.blog.enums.AccountOperationType;
 import com.blog.mapper.UserMapper;
 import com.blog.service.EmailService;
 import com.blog.service.UserService;
-import com.blog.utils.PasswordEncoder;
+import com.blog.utils.AESUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private EmailService emailService;
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private AESUtil aesUtil;
 
     /**
      * 分页查询用户列表
@@ -98,17 +98,17 @@ public class UserServiceImpl implements UserService {
                 return "账号已存在";
             }
 
-            // 使用解密后的密码
-            String password = createUserDTO.getDecryptedPassword();
-            // 对解密后的密码进行加密存储
-            String encodedPassword = passwordEncoder.encode(password);
+            // 生成随机密码
+            String randomPassword = generateRandomPassword(10);
+            // 使用AES加密密码
+            String encryptedPassword = aesUtil.encrypt(randomPassword);
             
             // 创建新用户对象并设置默认值
             User user = new User();
             user.setAccount(createUserDTO.getAccount());
             user.setUsername(createUserDTO.getAccount());  // 默认用账号作为用户名
-            user.setPassword(encodedPassword);
-            user.setPhone(null);
+            user.setPassword(encryptedPassword);
+            user.setPhone("");
             user.setImage("");  // 默认头像
             user.setIdentity(User.NORMAL_USER);          // 默认为普通用户
             user.setStatus(User.STATUS_OFFLINE);         // 默认为离线状态
@@ -117,10 +117,11 @@ public class UserServiceImpl implements UserService {
             // 保存用户
             userMapper.insert(user);
             
-            // 发送账号信息邮件
-            emailService.sendAccountInfo(createUserDTO.getEmail(), createUserDTO.getAccount(), password);
+            // 发送账号信息邮件（发送明文密码）
+            emailService.sendAccountInfo(createUserDTO.getEmail(), createUserDTO.getAccount(), randomPassword);
             
-            return "用户创建成功，账号信息已发送至邮箱";
+            // 返回AES加密后的密码
+            return encryptedPassword;
         } catch (Exception e) {
             throw new RuntimeException("创建用户失败：" + e.getMessage());
         }
@@ -169,12 +170,13 @@ public class UserServiceImpl implements UserService {
         // 生成随机密码
         String newPassword = generateRandomPassword(10);
         
-        // 对密码进行加密
-        String encodedPassword = passwordEncoder.encode(newPassword);
-        user.setPassword(encodedPassword);
+        // 使用AES加密密码
+        String encryptedPassword = aesUtil.encrypt(newPassword);
+        user.setPassword(encryptedPassword);
         userMapper.updateById(user);
 
-        return newPassword;  // 返回明文密码给管理员
+        // 返回AES加密后的密码
+        return encryptedPassword;
     }
 
     /**
