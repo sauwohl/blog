@@ -1,0 +1,5 @@
+# AES配置
+aes:
+  key: your-secret-key-16  # 16位密钥，生产环境请修改为安全的密钥
+
+# ... existing code ... 

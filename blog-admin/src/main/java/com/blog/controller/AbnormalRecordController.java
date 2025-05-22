@@ -23,6 +23,13 @@ public class AbnormalRecordController {
 
     /**
      * 分页查询异常记录
+     * @param page 当前页码
+     * @param perPage 每页数量
+     * @param category 异常类型（可选）
+     * @param status 处理状态（可选）
+     * @param beginDate 开始时间（可选）
+     * @param endDate 结束时间（可选）
+     * @return 异常记录列表
      */
     @GetMapping
     public Result listAbnormalRecords(

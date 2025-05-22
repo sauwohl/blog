@@ -53,3 +53,6 @@ logging:
   level:
     com.hmdp: debug
 
+aes:
+  key: 1234567890123456
+

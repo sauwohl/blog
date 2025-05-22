@@ -7,6 +7,7 @@ import com.blog.service.EmailService;
 import com.blog.service.AbnormalRecordService;
 import com.blog.dto.Result;
 import com.blog.dto.CreateUserDTO;
+import com.blog.utils.AESUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,9 @@ public class AdminController {
     @Autowired
     private AbnormalRecordService abnormalRecordService;
 
+    @Autowired
+    private AESUtil aesUtil;
+
     /**
      * 查询可疑内容
      * 展示被标记为可疑活动的文章内容
@@ -43,7 +47,7 @@ public class AdminController {
      * 分页查询所有允许登录的账号列表，按登录状态排序
      * 支持按账号模糊搜索
      */
-    @GetMapping
+    @GetMapping("/list")
     public Result listUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -56,10 +60,19 @@ public class AdminController {
 
     /**
      * 新增账号
+     * 前端需要用AES加密密码，密文通过encryptedPassword字段传递
      */
     @PostMapping
     public Result createUser(@RequestBody CreateUserDTO createUserDTO) {
-        return Result.ok(userService.createUser(createUserDTO));
+        try {
+            // 解密密码
+            String decryptedPassword = aesUtil.decrypt(createUserDTO.getEncryptedPassword());
+            createUserDTO.setDecryptedPassword(decryptedPassword);
+            
+            return Result.ok(userService.createUser(createUserDTO));
+        } catch (Exception e) {
+            return Result.fail("密码解密失败：" + e.getMessage());
+        }
     }
 
     /**
@@ -77,7 +90,7 @@ public class AdminController {
     /**
      * 根据账号查询用户
      */
-    @GetMapping("/{account}")
+    @GetMapping("/account/{account}")
     public Result getUserByAccount(@PathVariable String account) {
         User user = userService.getUserByAccount(account);
         if (user == null) {

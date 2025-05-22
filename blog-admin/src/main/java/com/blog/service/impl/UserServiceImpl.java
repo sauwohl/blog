@@ -98,23 +98,21 @@ public class UserServiceImpl implements UserService {
                 return "账号已存在";
             }
 
-            // 生成随机密码
-            String password = generateRandomPassword(10);
-            // 加密密码
+            // 使用解密后的密码
+            String password = createUserDTO.getDecryptedPassword();
+            // 对解密后的密码进行加密存储
             String encodedPassword = passwordEncoder.encode(password);
             
             // 创建新用户对象并设置默认值
             User user = new User();
             user.setAccount(createUserDTO.getAccount());
             user.setUsername(createUserDTO.getAccount());  // 默认用账号作为用户名
-            user.setPassword(encodedPassword);  // 存储加密后的密码
-            user.setPhone("");
-            user.setAvatar("");  // 默认头像
-            user.setRole(User.NORMAL_USER);          // 默认为普通用户
+            user.setPassword(encodedPassword);
+            user.setPhone(null);
+            user.setImage("");  // 默认头像
+            user.setIdentity(User.NORMAL_USER);          // 默认为普通用户
             user.setStatus(User.STATUS_OFFLINE);         // 默认为离线状态
-            user.setCreated_at(new Date());
-            user.setUpdated_at(new Date());
-
+            user.setCreateTime(new Date());
             
             // 保存用户
             userMapper.insert(user);
