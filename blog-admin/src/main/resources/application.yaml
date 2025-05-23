@@ -6,12 +6,12 @@ spring:
     name: blog
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://127.0.0.1:3306/iyue-blog?useSSL=false&serverTimezone=UTC
-#    username: root
-#    password: 123456
-    url: jdbc:mysql://172.18.0.1:3306/blog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&autoReconnect=true
+    url: jdbc:mysql://127.0.0.1:3306/iyue-blog?useSSL=false&serverTimezone=UTC
     username: root
-    password: Lzy.010904
+    password: 123456
+#    url: jdbc:mysql://172.18.0.1:3306/blog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&autoReconnect=true
+#    username: root
+#    password: Lzy.010904
 
   # 邮件配置
   mail:

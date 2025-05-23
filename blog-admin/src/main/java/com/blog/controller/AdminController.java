@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -92,7 +93,22 @@ public class AdminController {
         if (user == null) {
             return Result.fail("用户不存在");
         }
-        return Result.ok(user);
+        System.out.println(user.getAccount());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("userId", user.getId());
+        userData.put("username", user.getUsername());
+        userData.put("password", user.getPassword());
+        userData.put("phone", user.getPhone());
+        userData.put("status", user.getStatus());
+        userData.put("createdAt", user.getCreatedAt() != null ? dateFormat.format(user.getCreatedAt()) : null);
+        userData.put("updatedAt", user.getUpdatedAt() != null ? dateFormat.format(user.getUpdatedAt()) : null);
+        userData.put("account", user.getAccount());
+        userData.put("profile", user.getBio());
+
+        return Result.ok()
+                .setMessage("获取用户信息成功")
+                .setData(userData);
     }
 
     /**

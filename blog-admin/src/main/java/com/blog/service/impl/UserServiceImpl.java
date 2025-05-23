@@ -112,8 +112,8 @@ public class UserServiceImpl implements UserService {
             user.setAvatar("");  // 默认头像
             user.setRole(User.NORMAL_USER);          // 默认为普通用户
             user.setStatus(User.STATUS_OFFLINE);         // 默认为离线状态
-            user.setCreated_at(new Date());
-            user.setUpdated_at(new Date());
+            user.setCreatedAt(new Date());
+            user.setUpdatedAt(new Date());
             
             // 保存用户
             userMapper.insert(user);

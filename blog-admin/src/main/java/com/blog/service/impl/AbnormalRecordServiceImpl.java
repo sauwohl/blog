@@ -119,7 +119,7 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
     public PageResult<SuspiciousContentDTO> listSuspiciousContents(int page, int size) {
         // 1. 先查询标记为可疑活动的异常记录
         QueryWrapper<AccountAbnormalRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("abnormal_type", "SUSPICIOUS_ACTIVITY")
+        queryWrapper.eq("abnormal_type", "SUSPICIOUS_ACTIVITY-内容异常")
                    .orderByDesc("create_time");
         
         Page<AccountAbnormalRecord> pageResult = abnormalRecordMapper.selectPage(
@@ -159,6 +159,11 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         return PageResult.of(records, pageResult.getTotal(), page, size);
     }
 
+    @Override
+    public AccountAbnormalRecord getById(Long id) {
+        return abnormalRecordMapper.selectById(id);
+    }
+
     private AbnormalRecordDTO convertToDTO(AccountAbnormalRecord record) {
         AbnormalRecordDTO dto = new AbnormalRecordDTO();
         dto.setId(String.valueOf(record.getId()));
@@ -176,12 +181,12 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         // 设置异常描述
         String description;
         String abnormalType = record.getAbnormalType();
-        if ("IP_ABNORMAL".equals(abnormalType)) {
+        if ("IP_ABNORMAL-IP异常".equals(abnormalType)) {
             description = "IP异常登录";
-        } else if ("PASSWORD_RETRY".equals(abnormalType)) {
+        } else if ("PASSWORD_RETRY-异常登录".equals(abnormalType)) {
             description = "密码重试次数过多";
-        } else if ("SUSPICIOUS_ACTIVITY".equals(abnormalType)) {
-            description = "可疑操作";
+        } else if ("SUSPICIOUS_ACTIVITY-内容异常".equals(abnormalType)) {
+            description = "发布异常内容";
         } else {
             description = "未知异常";
         }

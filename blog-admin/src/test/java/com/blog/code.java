@@ -19,7 +19,7 @@ public class code {
     @Test
     public void testEncryptAndDecrypt() {
         // 测试普通字符串
-        String originalText = "Hello World";
+        String originalText = "G&P!E!DsYd";
         String encrypted = aesUtil.encrypt(originalText);
         String decrypted = aesUtil.decrypt(encrypted);
 

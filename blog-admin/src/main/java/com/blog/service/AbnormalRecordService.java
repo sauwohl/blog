@@ -3,6 +3,8 @@ package com.blog.service;
 import com.blog.dto.AbnormalRecordDTO;
 import com.blog.dto.PageResult;
 import com.blog.dto.SuspiciousContentDTO;
+import com.blog.entity.AccountAbnormalRecord;
+
 import java.time.LocalDateTime;
 
 public interface AbnormalRecordService {
@@ -42,4 +44,6 @@ public interface AbnormalRecordService {
      * @return 分页结果
      */
     PageResult<SuspiciousContentDTO> listSuspiciousContents(int page, int size);
+
+    AccountAbnormalRecord getById(Long id);
 } 
