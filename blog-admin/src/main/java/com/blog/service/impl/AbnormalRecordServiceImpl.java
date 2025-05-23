@@ -171,22 +171,35 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
 
     @Override
     public Map<String, Object> getAbnormalRecordDetail(String id) {
-        AbnormalRecordDTO record = getAbnormalRecord(id);
+        AccountAbnormalRecord record = abnormalRecordMapper.selectById(id);
         if (record == null) {
             return null;
         }
-        
+
         Map<String, Object> data = new HashMap<>();
         data.put("account", record.getAccount());
-        data.put("publish_time", record.getPublishTime());
-        data.put("description", record.getDescription());
-        
-        // 如果是可疑内容，需要包含博客信息
-        if (record.getCategory() == 2) {  // SUSPICIOUS_ACTIVITY
+        data.put("publish_time", record.getCreateTime().format(DATE_FORMATTER));
+
+        // 设置异常描述
+        String description;
+        String abnormalType = record.getAbnormalType();
+        if ("IP_ABNORMAL-IP异常".equals(abnormalType)) {
+            description = "IP异常登录";
+        } else if ("PASSWORD_RETRY-异常登录".equals(abnormalType)) {
+            description = "密码重试次数过多";
+        } else if ("SUSPICIOUS_ACTIVITY-内容异常".equals(abnormalType)) {
+            description = "发布异常内容";
+        } else {
+            description = "未知异常";
+        }
+        data.put("description", description);
+        data.put("abnormal_detail", record.getAbnormalDetail());
+
+        // 如果是可疑内容，需要额外包含博客信息
+        if ("SUSPICIOUS_ACTIVITY-内容异常".equals(abnormalType)) {
             try {
                 JsonNode detailNode = objectMapper.readTree(record.getAbnormalDetail());
                 Long articleId = detailNode.get("articleId").asLong();
-                
                 // 查询文章信息
                 Article article = articleMapper.selectById(articleId);
                 if (article != null) {
@@ -201,11 +214,8 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
                 data.put("title", "解析失败");
                 data.put("content", "内容解析失败");
             }
-        } else {
-            // 其他类型的异常，直接返回详细信息
-            data.put("detail", record.getAbnormalDetail());
         }
-        
+
         return data;
     }
 
@@ -250,11 +260,11 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         dto.setStatus(record.getIsResolved() ? 1 : 0);
         
         // 设置分类
-        if ("IP_ABNORMAL".equals(abnormalType)) {
+        if ("IP_ABNORMAL-IP异常".equals(abnormalType)) {
             dto.setCategory(0);
-        } else if ("PASSWORD_RETRY".equals(abnormalType)) {
+        } else if ("PASSWORD_RETRY-登陆异常".equals(abnormalType)) {
             dto.setCategory(1);
-        } else if ("SUSPICIOUS_ACTIVITY".equals(abnormalType)) {
+        } else if ("SUSPICIOUS_ACTIVITY-内容异常".equals(abnormalType)) {
             dto.setCategory(2);
         } else {
             dto.setCategory(-1);
