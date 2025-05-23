@@ -56,22 +56,22 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         // 添加时间范围条件
         if (beginDate != null) {
             log.info("添加开始时间条件: {}", beginDate.format(DATE_FORMATTER));
-            queryWrapper.apply("create_time >= {0}", beginDate);
+            queryWrapper.ge("create_time", beginDate);
         }
         if (endDate != null) {
             log.info("添加结束时间条件: {}", endDate.format(DATE_FORMATTER));
-            queryWrapper.apply("create_time <= {0}", endDate);
+            queryWrapper.le("create_time", endDate);
         }
         
         // 添加异常类型条件
         if (category != null) {
             log.info("添加异常类型条件: {}", category);
             if (category == 0) {
-                queryWrapper.eq("abnormal_type", "IP_ABNORMAL");
+                queryWrapper.eq("abnormal_type", "IP_ABNORMAL-IP异常");
             } else if (category == 1) {
-                queryWrapper.eq("abnormal_type", "PASSWORD_RETRY");
+                queryWrapper.eq("abnormal_type", "PASSWORD_RETRY-异常登录");
             } else if (category == 2) {
-                queryWrapper.eq("abnormal_type", "SUSPICIOUS_ACTIVITY");
+                queryWrapper.eq("abnormal_type", "SUSPICIOUS_ACTIVITY-内容异常");
             }
         }
         
