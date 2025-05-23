@@ -12,6 +12,7 @@ import com.blog.mapper.UserMapper;
 import com.blog.service.EmailService;
 import com.blog.service.UserService;
 import com.blog.utils.AESUtil;
+import com.blog.mapper.TokenMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,8 @@ public class UserServiceImpl implements UserService {
     private EmailService emailService;
     @Autowired
     private AESUtil aesUtil;
+    @Autowired
+    private TokenMapper tokenMapper;
 
     /**
      * 分页查询用户列表
@@ -205,6 +208,11 @@ public class UserServiceImpl implements UserService {
         if (user != null) {
             user.setStatus(User.STATUS_OFFLINE);
             userMapper.updateById(user);
+            
+            // 删除用户的token
+            QueryWrapper<Token> tokenWrapper = new QueryWrapper<>();
+            tokenWrapper.eq("account", account);
+            tokenMapper.delete(tokenWrapper);
         }
         
         return new OperVO(account, AccountOperationType.KICK_OUT);
@@ -227,6 +235,11 @@ public class UserServiceImpl implements UserService {
         if (user != null) {
             user.setStatus(User.STATUS_BANNED);
             userMapper.updateById(user);
+            
+            // 删除用户的token
+            QueryWrapper<Token> tokenWrapper = new QueryWrapper<>();
+            tokenWrapper.eq("account", account);
+            tokenMapper.delete(tokenWrapper);
         }
         
         return new OperVO(account, AccountOperationType.BAN);

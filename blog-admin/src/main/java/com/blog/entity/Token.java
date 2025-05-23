@@ -17,11 +17,4 @@ public class Token {
     
     private String token;
     
-    private LocalDateTime expireTime;    // token过期时间
-    
-    private LocalDateTime lastUsedTime;  // 最后使用时间
-    
-    private Integer status;              // 状态：0-无效，1-有效
-    
-    private LocalDateTime createTime;    // 创建时间
 } 

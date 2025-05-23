@@ -6,10 +6,10 @@ import java.util.Map;
 
 @Data
 public class Result {
-    private Integer code;
-    private String message;
-    private Object data;
-    private Map<String, Object> extra;
+    private Integer code;      // 状态码
+    private String message;    // 提示信息
+    private Object data;       // 数据
+    private Map<String, Object> extra;  // 额外信息
 
     public Result() {
         this.extra = new HashMap<>();
@@ -35,6 +35,16 @@ public class Result {
         return r;
     }
 
+    public Result setMessage(String message) {
+        this.message = message;
+        return this;
+    }
+
+    public Result setData(Object data) {
+        this.data = data;
+        return this;
+    }
+
     /**
      * 添加额外数据
      *
@@ -44,16 +54,6 @@ public class Result {
      */
     public Result setExtra(String key, Object value) {
         this.extra.put(key, value);
-        return this;
-    }
-
-    public Result setMessage(String message) {
-        this.message = message;
-        return this;
-    }
-
-    public Result setData(Object data) {
-        this.data = data;
         return this;
     }
 }

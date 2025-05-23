@@ -134,9 +134,7 @@ public class AdminController {
      * @return 操作结果，包含重定向信息
      */
     @PostMapping("/account/operation")
-    public ResponseEntity<Result> handleAccountOperation(
-            @RequestBody OperVO operVO) {
-        
+    public ResponseEntity<Result> handleAccountOperation(@RequestBody OperVO operVO) {
         OperVO operResult;
         String redirectUrl = null;
         
