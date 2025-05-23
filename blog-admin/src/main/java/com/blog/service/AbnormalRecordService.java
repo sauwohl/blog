@@ -3,7 +3,10 @@ package com.blog.service;
 import com.blog.dto.AbnormalRecordDTO;
 import com.blog.dto.PageResult;
 import com.blog.dto.SuspiciousContentDTO;
+import com.blog.entity.AccountAbnormalRecord;
+
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public interface AbnormalRecordService {
     
@@ -42,4 +45,13 @@ public interface AbnormalRecordService {
      * @return 分页结果
      */
     PageResult<SuspiciousContentDTO> listSuspiciousContents(int page, int size);
+
+    AccountAbnormalRecord getById(Long id);
+
+    /**
+     * 获取异常记录详情
+     * @param id 异常记录ID
+     * @return 异常记录详情，包含不同类型的异常信息
+     */
+    Map<String, Object> getAbnormalRecordDetail(String id);
 } 

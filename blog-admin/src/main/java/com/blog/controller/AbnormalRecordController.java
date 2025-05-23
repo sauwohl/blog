@@ -4,12 +4,20 @@ import com.blog.dto.AbnormalRecordDTO;
 import com.blog.dto.PageResult;
 import com.blog.dto.Result;
 import com.blog.dto.OperVO;
+import com.blog.entity.AccountAbnormalRecord;
+import com.blog.entity.Article;
+import com.blog.mapper.ArticleMapper;
 import com.blog.service.AbnormalRecordService;
 import com.blog.service.UserService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/abnormal-records")
@@ -20,6 +28,12 @@ public class AbnormalRecordController {
     
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ArticleMapper articleMapper;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * 分页查询异常记录
@@ -40,6 +54,23 @@ public class AbnormalRecordController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime beginDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endDate) {
         return Result.ok(abnormalRecordService.listAbnormalRecords(page, perPage, category, status, beginDate, endDate));
+    }
+
+    /**
+     * 通过ID查询异常内容详情
+     * @param id 异常记录ID
+     * @return 异常内容详情
+     */
+    @GetMapping("/{id}/detail")
+    public Result getAbnormalRecordDetail(@PathVariable String id) {
+        Map<String, Object> data = abnormalRecordService.getAbnormalRecordDetail(id);
+        if (data == null) {
+            return Result.fail("异常记录不存在");
+        }
+        
+        return Result.ok()
+                .setMessage("获取异常记录成功")
+                .setData(data);
     }
 
     /**

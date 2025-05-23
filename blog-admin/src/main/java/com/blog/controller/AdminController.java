@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class AdminController {
      * 分页查询所有允许登录的账号列表，按登录状态排序
      * 支持按账号模糊搜索
      */
-    @GetMapping("/list")
+    @GetMapping
     public Result listUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -95,7 +96,22 @@ public class AdminController {
         if (user == null) {
             return Result.fail("用户不存在");
         }
-        return Result.ok(user);
+        System.out.println(user.getAccount());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("userId", user.getId());
+        userData.put("username", user.getUsername());
+        userData.put("password", user.getPassword());
+        userData.put("phone", user.getPhone());
+        userData.put("status", user.getStatus());
+        userData.put("createdAt", user.getCreatedAt() != null ? dateFormat.format(user.getCreatedAt()) : null);
+        userData.put("updatedAt", user.getUpdatedAt() != null ? dateFormat.format(user.getUpdatedAt()) : null);
+        userData.put("account", user.getAccount());
+        userData.put("profile", user.getBio());
+
+        return Result.ok()
+                .setMessage("获取用户信息成功")
+                .setData(userData);
     }
 
     /**
@@ -115,13 +131,11 @@ public class AdminController {
      * 支持踢出、封禁、解封操作
      *
      * @param operVO 操作请求参数
-     * @param authorization 认证token
      * @return 操作结果，包含重定向信息
      */
     @PostMapping("/account/operation")
     public ResponseEntity<Result> handleAccountOperation(
-            @RequestBody OperVO operVO,
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+            @RequestBody OperVO operVO) {
         
         OperVO operResult;
         String redirectUrl = null;

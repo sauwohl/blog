@@ -32,9 +32,9 @@ public class User {
     
     private Integer status;
     
-    private Date created_at;
+    private Date createdAt;
 
-    private Date updated_at;
+    private Date updatedAt;
     
     private String bio;
     

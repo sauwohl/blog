@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Map;
+import java.util.HashMap;
 
 @Slf4j
 @Service
@@ -34,6 +36,9 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
     
     @Autowired
     private ArticleMapper articleMapper;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -119,7 +124,7 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
     public PageResult<SuspiciousContentDTO> listSuspiciousContents(int page, int size) {
         // 1. 先查询标记为可疑活动的异常记录
         QueryWrapper<AccountAbnormalRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("abnormal_type", "SUSPICIOUS_ACTIVITY")
+        queryWrapper.eq("abnormal_type", "SUSPICIOUS_ACTIVITY-内容异常")
                    .orderByDesc("create_time");
         
         Page<AccountAbnormalRecord> pageResult = abnormalRecordMapper.selectPage(
@@ -159,6 +164,51 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         return PageResult.of(records, pageResult.getTotal(), page, size);
     }
 
+    @Override
+    public AccountAbnormalRecord getById(Long id) {
+        return abnormalRecordMapper.selectById(id);
+    }
+
+    @Override
+    public Map<String, Object> getAbnormalRecordDetail(String id) {
+        AbnormalRecordDTO record = getAbnormalRecord(id);
+        if (record == null) {
+            return null;
+        }
+        
+        Map<String, Object> data = new HashMap<>();
+        data.put("account", record.getAccount());
+        data.put("publish_time", record.getPublishTime());
+        data.put("description", record.getDescription());
+        
+        // 如果是可疑内容，需要包含博客信息
+        if (record.getCategory() == 2) {  // SUSPICIOUS_ACTIVITY
+            try {
+                JsonNode detailNode = objectMapper.readTree(record.getAbnormalDetail());
+                Long articleId = detailNode.get("articleId").asLong();
+                
+                // 查询文章信息
+                Article article = articleMapper.selectById(articleId);
+                if (article != null) {
+                    data.put("title", article.getTitle());
+                    data.put("content", article.getContent());
+                } else {
+                    data.put("title", "文章已删除");
+                    data.put("content", "文章内容不可用");
+                }
+            } catch (Exception e) {
+                log.error("解析异常记录详情失败", e);
+                data.put("title", "解析失败");
+                data.put("content", "内容解析失败");
+            }
+        } else {
+            // 其他类型的异常，直接返回详细信息
+            data.put("detail", record.getAbnormalDetail());
+        }
+        
+        return data;
+    }
+
     private AbnormalRecordDTO convertToDTO(AccountAbnormalRecord record) {
         AbnormalRecordDTO dto = new AbnormalRecordDTO();
         dto.setId(String.valueOf(record.getId()));
@@ -176,12 +226,12 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         // 设置异常描述
         String description;
         String abnormalType = record.getAbnormalType();
-        if ("IP_ABNORMAL".equals(abnormalType)) {
+        if ("IP_ABNORMAL-IP异常".equals(abnormalType)) {
             description = "IP异常登录";
-        } else if ("PASSWORD_RETRY".equals(abnormalType)) {
+        } else if ("PASSWORD_RETRY-异常登录".equals(abnormalType)) {
             description = "密码重试次数过多";
-        } else if ("SUSPICIOUS_ACTIVITY".equals(abnormalType)) {
-            description = "可疑操作";
+        } else if ("SUSPICIOUS_ACTIVITY-内容异常".equals(abnormalType)) {
+            description = "发布异常内容";
         } else {
             description = "未知异常";
         }
