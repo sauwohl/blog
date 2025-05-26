@@ -117,7 +117,7 @@ public class UserServiceImpl implements UserService {
             user.setPassword(encryptedPassword);
             user.setPhone(null);
             user.setAvatar("");  // 默认头像
-            user.setRole(User.NORMAL_USER);          // 默认为普通用户
+            user.setRole(User.ROLE_NORMAL);          // 默认为普通用户
             user.setStatus(User.STATUS_OFFLINE);         // 默认为离线状态
             user.setCreatedAt(new Date());
             user.setUpdatedAt(new Date());

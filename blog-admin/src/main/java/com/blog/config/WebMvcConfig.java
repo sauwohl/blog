@@ -23,7 +23,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                .addPathPatterns("/**")
                .excludePathPatterns(
                    "/user/login",
-                   "/user/register"
+                   "/user/register",
+                       "/link"
                );
                
         // IP检查拦截器

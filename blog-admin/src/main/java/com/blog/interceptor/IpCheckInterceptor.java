@@ -74,7 +74,8 @@ public class IpCheckInterceptor implements HandlerInterceptor {
      */
     private void writeErrorResponse(HttpServletResponse response, int status, String message) throws Exception {
         response.setContentType("application/json;charset=UTF-8");
-        Result result = Result.fail(message).setCode(status);
+        Result result = Result.fail(message);
+        result.setCode(status);
         try (PrintWriter writer = response.getWriter()) {
             writer.write(objectMapper.writeValueAsString(result));
         }
