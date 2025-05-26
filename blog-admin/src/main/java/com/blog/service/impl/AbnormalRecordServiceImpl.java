@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
 import java.util.HashMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.blog.util.IpUtil;
+import com.blog.utils.IpUtil;
 
 @Slf4j
 @Service
