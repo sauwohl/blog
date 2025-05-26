@@ -8,9 +8,11 @@ import com.blog.dto.SuspiciousContentDTO;
 import com.blog.entity.AccountAbnormalRecord;
 import com.blog.entity.User;
 import com.blog.entity.Article;
+import com.blog.entity.UserIpRecord;
 import com.blog.mapper.AccountAbnormalRecordMapper;
 import com.blog.mapper.UserMapper;
 import com.blog.mapper.ArticleMapper;
+import com.blog.mapper.UserIpRecordMapper;
 import com.blog.service.AbnormalRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
 import java.util.HashMap;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.blog.util.IpUtil;
 
 @Slf4j
 @Service
@@ -39,6 +43,9 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
     
     @Autowired
     private ObjectMapper objectMapper;
+    
+    @Autowired
+    private UserIpRecordMapper userIpRecordMapper;
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -217,6 +224,67 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         }
 
         return data;
+    }
+
+    @Override
+    public void checkAndRecordIpAbnormal(String account, String ipAddress) {
+        // 1. 查询该IP是否有记录
+        UserIpRecord record = userIpRecordMapper.getRecord(account, ipAddress);
+        
+        if (record != null) {
+            // 2. 更新访问次数
+            record.setCount(record.getCount() + 1);
+            // 如果访问次数超过10次，标记为常用IP
+            if (record.getCount() >= 10) {
+                record.setIsCommon(true);
+            }
+            userIpRecordMapper.updateById(record);
+            return;
+        }
+        
+        // 3. 如果是新IP，先查询用户的常用IP列表
+        List<UserIpRecord> commonIps = userIpRecordMapper.listCommonIps(account);
+        
+        // 4. 如果没有常用IP记录，或者这是第一次访问，直接记录
+        if (commonIps.isEmpty()) {
+            saveNewIpRecord(account, ipAddress, false);
+            return;
+        }
+        
+        // 5. 如果有常用IP但当前IP不在其中，记录异常
+        saveNewIpRecord(account, ipAddress, false);
+        saveAbnormalRecord(account, ipAddress);
+    }
+
+    private void saveNewIpRecord(String account, String ipAddress, boolean isCommon) {
+        UserIpRecord newRecord = new UserIpRecord();
+        newRecord.setAccount(account);
+        newRecord.setIp(ipAddress);
+        newRecord.setCount(1);
+        newRecord.setIsCommon(isCommon);
+        userIpRecordMapper.insert(newRecord);
+    }
+
+    private void saveAbnormalRecord(String account, String ipAddress) {
+        AccountAbnormalRecord abnormalRecord = new AccountAbnormalRecord();
+        abnormalRecord.setAccount(account);
+        abnormalRecord.setAbnormalType("IP_ABNORMAL");
+        
+        Map<String, Object> detail = new HashMap<>();
+        detail.put("ip", ipAddress);
+        detail.put("timestamp", LocalDateTime.now().toString());
+        detail.put("description", "检测到非常用IP地址访问");
+        
+        try {
+            abnormalRecord.setAbnormalDetail(objectMapper.writeValueAsString(detail));
+        } catch (JsonProcessingException e) {
+            log.error("JSON序列化异常: {}", e.getMessage());
+            return;
+        }
+        
+        abnormalRecord.setIsResolved(false);
+        abnormalRecord.setCreateTime(LocalDateTime.now());
+        abnormalRecordMapper.insert(abnormalRecord);
     }
 
     private AbnormalRecordDTO convertToDTO(AccountAbnormalRecord record) {

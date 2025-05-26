@@ -7,29 +7,19 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("user_ip_records")
+@TableName("user_ip_record")
 public class UserIpRecord {
     
     @TableId(type = IdType.AUTO)
     private Long id;
     
-    private Long userId;
+    private String account;
     
-    private String ipAddress;
+    private String ip;
     
-    private String location;  // IP地理位置
+    private Integer count;
     
-    private Boolean isCommon;  // 是否为常用地址
-    
-    private Integer loginCount;  // 该IP的登录次数
-    
-    private LocalDateTime firstLoginTime;
-    
-    private LocalDateTime lastLoginTime;
-    
-    private Boolean isAbnormal;  // 是否标记为异常
-    
-    private String abnormalReason;  // 异常原因
+    private Boolean isCommon;
     
     private LocalDateTime createTime;
     

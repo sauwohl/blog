@@ -54,4 +54,11 @@ public interface AbnormalRecordService {
      * @return 异常记录详情，包含不同类型的异常信息
      */
     Map<String, Object> getAbnormalRecordDetail(String id);
+
+    /**
+     * 检查并记录IP异常
+     * @param account 用户账号
+     * @param ipAddress IP地址
+     */
+    void checkAndRecordIpAbnormal(String account, String ipAddress);
 } 
