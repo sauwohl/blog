@@ -3,6 +3,8 @@ package com.blog.interceptor;
 import com.blog.service.AbnormalRecordService;
 import com.blog.service.UserService;
 import com.blog.utils.IpUtil;
+import com.blog.dto.Result;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -10,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 
 @Slf4j
 @Component
@@ -20,9 +23,12 @@ public class IpCheckInterceptor implements HandlerInterceptor {
     
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 获取请求路径
         String uri = request.getRequestURI();
         
@@ -41,11 +47,13 @@ public class IpCheckInterceptor implements HandlerInterceptor {
         if (uri.startsWith("/admin")) {
             if (account == null) {
                 response.setStatus(401);
+                writeErrorResponse(response, 401, "请先登录");
                 return false;
             }
             // 检查是否是管理员
             if (!userService.isAdmin(account)) {
                 response.setStatus(403);
+                writeErrorResponse(response, 403, "权限不足，需要管理员权限");
                 return false;
             }
             // 管理员操作必须记录IP
@@ -59,6 +67,17 @@ public class IpCheckInterceptor implements HandlerInterceptor {
         }
         
         return true;
+    }
+    
+    /**
+     * 写入错误响应
+     */
+    private void writeErrorResponse(HttpServletResponse response, int status, String message) throws Exception {
+        response.setContentType("application/json;charset=UTF-8");
+        Result result = Result.fail(message).setCode(status);
+        try (PrintWriter writer = response.getWriter()) {
+            writer.write(objectMapper.writeValueAsString(result));
+        }
     }
     
     /**
