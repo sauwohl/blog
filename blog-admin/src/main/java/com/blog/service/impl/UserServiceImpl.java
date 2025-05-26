@@ -317,4 +317,12 @@ public class UserServiceImpl implements UserService {
         
         return new String(passwordArray);
     }
+
+    @Override
+    public boolean isAdmin(String account) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("account", account);
+        User user = userMapper.selectOne(queryWrapper);
+        return user != null && user.getRole() != null && user.getRole() == User.ROLE_ADMIN;
+    }
 }

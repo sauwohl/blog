@@ -39,8 +39,8 @@ public class User {
     private String bio;
     
     // 用户身份常量
-    public static final int NORMAL_USER = 0;
-    public static final int ADMIN_USER = 1;
+    public static final int ROLE_NORMAL = 0;  // 普通用户
+    public static final int ROLE_ADMIN = 1;   // 管理员用户
     
     // 用户状态常量
     public static final int STATUS_OFFLINE = 0;
@@ -49,7 +49,7 @@ public class User {
     
     // 判断是否是管理员
     public boolean isAdmin() {
-        return ADMIN_USER == this.role;
+        return ROLE_ADMIN == this.role;
     }
     
     // 判断是否被封禁

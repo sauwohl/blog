@@ -1,6 +1,7 @@
 package com.blog.interceptor;
 
 import com.blog.service.AbnormalRecordService;
+import com.blog.service.UserService;
 import com.blog.utils.IpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,9 @@ public class IpCheckInterceptor implements HandlerInterceptor {
 
     @Autowired
     private AbnormalRecordService abnormalRecordService;
+    
+    @Autowired
+    private UserService userService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -33,7 +37,23 @@ public class IpCheckInterceptor implements HandlerInterceptor {
         // 获取当前用户账号（从token中）
         String account = (String) request.getAttribute("account");
         
-        // 只记录已登录用户的关键操作
+        // 检查管理员权限
+        if (uri.startsWith("/admin")) {
+            if (account == null) {
+                response.setStatus(401);
+                return false;
+            }
+            // 检查是否是管理员
+            if (!userService.isAdmin(account)) {
+                response.setStatus(403);
+                return false;
+            }
+            // 管理员操作必须记录IP
+            abnormalRecordService.checkAndRecordIpAbnormal(account, ipAddress);
+            return true;
+        }
+        
+        // 其他关键操作的IP记录
         if (account != null && !ipAddress.isEmpty() && isKeyOperation(uri)) {
             abnormalRecordService.checkAndRecordIpAbnormal(account, ipAddress);
         }
@@ -70,7 +90,6 @@ public class IpCheckInterceptor implements HandlerInterceptor {
             || uri.contains("/user/register")  // 注册
             || uri.contains("/article/publish")  // 发布文章
             || uri.contains("/article/edit")  // 编辑文章
-            || uri.contains("/admin/")  // 管理员操作
             || uri.contains("/comment/add");  // 评论
     }
 } 

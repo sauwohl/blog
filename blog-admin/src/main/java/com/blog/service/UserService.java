@@ -47,4 +47,11 @@ public interface UserService {
     OperVO banUser(String account);
     OperVO unbanUser(String account);
     boolean isUserBanned(String account);
+
+    /**
+     * 判断用户是否为管理员
+     * @param account 用户账号
+     * @return 是否为管理员
+     */
+    boolean isAdmin(String account);
 }
