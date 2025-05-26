@@ -60,7 +60,7 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         }
         if (endDate != null) {
             log.info("添加结束时间条件: {}", endDate.format(DATE_FORMATTER));
-            queryWrapper.le("create_time", endDate);
+            queryWrapper.lt("create_time", endDate);
         }
         
         // 添加异常类型条件
@@ -71,7 +71,7 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
             } else if (category == 1) {
                 queryWrapper.eq("abnormal_type", "PASSWORD_RETRY-异常登录");
             } else if (category == 2) {
-                queryWrapper.eq("abnormal_type", "SUSPICIOUS_ACTIVITY-内容异常");
+                queryWrapper.eq("abnormal_type", "SUSPICIOUS_CONTENT-内容异常");
             }
         }
         
@@ -124,7 +124,7 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
     public PageResult<SuspiciousContentDTO> listSuspiciousContents(int page, int size) {
         // 1. 先查询标记为可疑活动的异常记录
         QueryWrapper<AccountAbnormalRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("abnormal_type", "SUSPICIOUS_ACTIVITY-内容异常")
+        queryWrapper.eq("abnormal_type", "SUSPICIOUS_CONTENT-内容异常")
                    .orderByDesc("create_time");
         
         Page<AccountAbnormalRecord> pageResult = abnormalRecordMapper.selectPage(
@@ -187,7 +187,7 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
             description = "IP异常登录";
         } else if ("PASSWORD_RETRY-异常登录".equals(abnormalType)) {
             description = "密码重试次数过多";
-        } else if ("SUSPICIOUS_ACTIVITY-内容异常".equals(abnormalType)) {
+        } else if ("SUSPICIOUS_CONTENT-内容异常".equals(abnormalType)) {
             description = "发布异常内容";
         } else {
             description = "未知异常";
@@ -196,7 +196,7 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
         data.put("abnormal_detail", record.getAbnormalDetail());
 
         // 如果是可疑内容，需要额外包含博客信息
-        if ("SUSPICIOUS_ACTIVITY-内容异常".equals(abnormalType)) {
+        if ("SUSPICIOUS_CONTENT-内容异常".equals(abnormalType)) {
             try {
                 JsonNode detailNode = objectMapper.readTree(record.getAbnormalDetail());
                 Long articleId = detailNode.get("articleId").asLong();
@@ -240,7 +240,7 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
             description = "IP异常登录";
         } else if ("PASSWORD_RETRY-异常登录".equals(abnormalType)) {
             description = "密码重试次数过多";
-        } else if ("SUSPICIOUS_ACTIVITY-内容异常".equals(abnormalType)) {
+        } else if ("SUSPICIOUS_CONTENT-内容异常".equals(abnormalType)) {
             description = "发布异常内容";
         } else {
             description = "未知异常";
@@ -264,7 +264,7 @@ public class AbnormalRecordServiceImpl implements AbnormalRecordService {
             dto.setCategory(0);
         } else if ("PASSWORD_RETRY-登陆异常".equals(abnormalType)) {
             dto.setCategory(1);
-        } else if ("SUSPICIOUS_ACTIVITY-内容异常".equals(abnormalType)) {
+        } else if ("SUSPICIOUS_CONTENT-内容异常".equals(abnormalType)) {
             dto.setCategory(2);
         } else {
             dto.setCategory(-1);
