@@ -7,18 +7,18 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/iyue-blog?useSSL=false&serverTimezone=UTC
-    username: root
-    password: 123456
+    username: 
+    password: 
 #    url: jdbc:mysql://172.18.0.1:3306/blog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&autoReconnect=true
-#    username: root
-#    password: Lzy.010904
+#    username: 
+#    password: 
 
   # 邮件配置
   mail:
     host: smtp.qq.com  # QQ邮箱的SMTP服务器地址
     port: 587         # SMTP服务器端口号
-    username: 1594133583@qq.com  # 发件人邮箱
-    password: uxiefpxpykamggbj  # 邮箱授权码（不是邮箱密码）
+    username:   # 发件人邮箱
+    password:  # 邮箱授权码（不是邮箱密码）
     properties:
       mail:
         smtp:
